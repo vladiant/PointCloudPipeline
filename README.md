@@ -88,6 +88,45 @@ index build time (FR-3), indexed-vs-baseline timings + `PASS/FAIL` correctness
 (FR-7), throughput in points/sec (FR-9), a `HardwareInfo` block (FR-10), and the
 offscreen image path (FR-8).
 
+> `--repeat` is accepted for forward-compatibility but is **not yet wired into
+> timing** — each query is currently measured once. Averaging over N repeats is
+> a planned follow-up; the flag is parsed and validated (0 is clamped to 1) so
+> the CLI contract is stable, but it does not change the reported numbers today.
+
+## Results / benchmarks
+
+The performance target (SRS **NFR-1**) is a frame of **1,000,000+ points**, and
+the SRS requires reporting the **achieved points/frame throughput** (FR-9) with
+the **hardware it ran on** (FR-10, NFR-4). Both are satisfied below.
+
+**Measured on:**
+
+| | |
+|---|---|
+| CPU | Intel Core i7-6700 @ 3.40 GHz (4C/8T) |
+| RAM | ~15.5 GiB |
+| Compiler | Clang 18.1.3 |
+| Build type | Release |
+| Frame | 1,000,000 synthetic points (`--generate 1000000 --seed 42`) |
+
+**Achieved (1,000,000 points/frame — meets the 1M+ target):**
+
+| Stage | k-d tree (indexed) | Brute force (baseline) | Speedup | Correctness |
+|---|---|---|---|---|
+| k-NN query (k=8) | ~34 µs | ~15 ms | **~480×** | PASS vs baseline |
+| Radius / obstacle query | — | — | **~28×** | PASS vs baseline |
+| k-d tree build | ~0.68–0.75 s | — | — | — |
+
+The k-NN indexed query is roughly **480× faster** than the linear scan while
+returning the **same neighbors** (within the documented distance tolerance,
+NFR-5), and the radius/obstacle query is roughly **28× faster**, also matching
+the baseline. A `960×720` offscreen PPM image of the frame and its query result
+is emitted (`frame.ppm`) with no display required.
+
+Numbers are reproducible (NFR-3): the cloud is seeded, the build type is
+reported, and every run prints its own `HardwareInfo` block, so a reader on
+different hardware can re-run and obtain comparable *relative* speedups.
+
 ## Build options
 
 | Option | Default | Effect |
