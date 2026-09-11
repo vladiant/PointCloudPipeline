@@ -1,0 +1,225 @@
+# CI for PointCloudPipeline — builds and tests the C++17 core on Linux using the
+# exact Conan 2 + CMake-preset flow the repo uses (Clang 18, Open3D OFF).
+#
+# Three jobs:
+#   build-test  : Debug and Release matrix — conan install, configure, build,
+#                 ctest. Release also produces + uploads the pcp_cli binary and a
+#                 sample rendered frame as release artifacts.
+#   sanitizers  : the Debug + ASan/UBSan build QA used, run to catch memory/UB
+#                 defects that a plain build would miss.
+#   package     : CPack a self-contained TGZ from the Release build (gated on the
+#                 build-test job passing) and upload it.
+#
+# Any build or test failure fails the job (and therefore the pipeline).
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+  workflow_dispatch:
+
+# Cancel superseded runs on the same ref to save free-tier minutes.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  # Single source of truth for the Conan profile the repo ships.
+  CONAN_PROFILE: conan/profiles/linux-clang18
+
+jobs:
+  build-test:
+    name: build & test (${{ matrix.build_type }})
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        build_type: [Debug, Release]
+    steps:
+      - uses: actions/checkout@v4
+
+      # Clang 18 is in the Ubuntu 24.04 repos; the shipped profile points at the
+      # unversioned /usr/bin/clang{,++}, so alias them to the -18 binaries.
+      - name: Install Clang 18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18
+          sudo ln -sf /usr/bin/clang-18   /usr/bin/clang
+          sudo ln -sf /usr/bin/clang++-18 /usr/bin/clang++
+          clang --version
+
+      - name: Set up Python (for Conan)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan 2
+        run: |
+          pip3 install "conan>=2.0"
+          conan profile detect --force
+
+      # Cache the Conan package store (binary cache). Keyed on the recipe so a
+      # dependency change invalidates it; falls back to the latest partial cache.
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-clang18-${{ matrix.build_type }}-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-clang18-${{ matrix.build_type }}-
+            conan-${{ runner.os }}-clang18-
+
+      # Explicit :h and :b build_type qualifiers on both profiles — omitting them
+      # only sets build_type on the host profile and breaks source builds.
+      - name: Conan install
+        run: |
+          conan install . \
+            --profile:host "$CONAN_PROFILE" \
+            --profile:build "$CONAN_PROFILE" \
+            --build=missing \
+            -s:h build_type=${{ matrix.build_type }} \
+            -s:b build_type=${{ matrix.build_type }}
+
+      - name: Configure
+        run: cmake --preset conan-${{ matrix.build_type == 'Debug' && 'debug' || 'release' }}
+
+      - name: Build
+        run: cmake --build --preset conan-${{ matrix.build_type == 'Debug' && 'debug' || 'release' }} --parallel
+
+      - name: Test
+        run: ctest --test-dir build/${{ matrix.build_type }} --output-on-failure
+
+      # Produce the release artifacts from the Release build only: a fully
+      # offline synthetic run that also writes the sample PPM frame (FR-8).
+      - name: Generate release artifacts
+        if: matrix.build_type == 'Release'
+        run: |
+          ./build/Release/src/cli/pcp_cli \
+            --generate 200000 --query 0,0,0 --k 8 --radius 5 \
+            --viz-output frame.ppm
+          ls -l build/Release/src/cli/pcp_cli frame.ppm
+
+      - name: Upload release artifacts
+        if: matrix.build_type == 'Release'
+        uses: actions/upload-artifact@v4
+        with:
+          name: pcp_cli-linux-x86_64
+          path: |
+            build/Release/src/cli/pcp_cli
+            frame.ppm
+          if-no-files-found: error
+
+  sanitizers:
+    name: ASan + UBSan (Debug)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Clang 18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18
+          sudo ln -sf /usr/bin/clang-18   /usr/bin/clang
+          sudo ln -sf /usr/bin/clang++-18 /usr/bin/clang++
+
+      - name: Set up Python (for Conan)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan 2
+        run: |
+          pip3 install "conan>=2.0"
+          conan profile detect --force
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-clang18-Debug-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-clang18-Debug-
+            conan-${{ runner.os }}-clang18-
+
+      - name: Conan install (Debug)
+        run: |
+          conan install . \
+            --profile:host "$CONAN_PROFILE" \
+            --profile:build "$CONAN_PROFILE" \
+            --build=missing \
+            -s:h build_type=Debug \
+            -s:b build_type=Debug
+
+      # Same flags QA used for the build/asan configuration.
+      - name: Configure with sanitizers
+        run: |
+          cmake --preset conan-debug \
+            -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g" \
+            -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+
+      - name: Build
+        run: cmake --build --preset conan-debug --parallel
+
+      - name: Test under sanitizers
+        env:
+          ASAN_OPTIONS: detect_leaks=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+        run: ctest --test-dir build/Debug --output-on-failure
+
+  package:
+    name: package (CPack TGZ)
+    runs-on: ubuntu-24.04
+    needs: build-test
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Clang 18
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang-18
+          sudo ln -sf /usr/bin/clang-18   /usr/bin/clang
+          sudo ln -sf /usr/bin/clang++-18 /usr/bin/clang++
+
+      - name: Set up Python (for Conan)
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install Conan 2
+        run: |
+          pip3 install "conan>=2.0"
+          conan profile detect --force
+
+      - name: Cache Conan packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ runner.os }}-clang18-Release-${{ hashFiles('conanfile.py') }}
+          restore-keys: |
+            conan-${{ runner.os }}-clang18-Release-
+            conan-${{ runner.os }}-clang18-
+
+      - name: Conan install (Release)
+        run: |
+          conan install . \
+            --profile:host "$CONAN_PROFILE" \
+            --profile:build "$CONAN_PROFILE" \
+            --build=missing \
+            -s:h build_type=Release \
+            -s:b build_type=Release
+
+      - name: Configure & build
+        run: |
+          cmake --preset conan-release
+          cmake --build --preset conan-release --parallel
+
+      - name: CPack
+        run: cpack -G TGZ --config build/Release/CPackConfig.cmake -B "$PWD/dist"
+
+      - name: Upload package
+        uses: actions/upload-artifact@v4
+        with:
+          name: PointCloudPipeline-tgz
+          path: dist/*.tar.gz
+          if-no-files-found: error

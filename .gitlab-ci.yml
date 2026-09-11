@@ -1,0 +1,73 @@
+# GitLab CI mirror of .github/workflows/ci.yml (GitHub Actions is the primary).
+# Same Conan 2 + CMake-preset flow, Clang 18, Open3D OFF. Kept minimal.
+stages: [build-test, sanitize, package]
+
+variables:
+  CONAN_PROFILE: conan/profiles/linux-clang18
+  # Keep the Conan home inside the project so it can be cached between runs.
+  CONAN_HOME: ${CI_PROJECT_DIR}/.conan2
+
+# Shared setup: Clang 18 + Conan 2. Runs on a stock Ubuntu 24.04 image.
+.linux_setup: &linux_setup
+  image: ubuntu:24.04
+  before_script:
+    - apt-get update
+    - apt-get install -y clang-18 cmake python3-pip git
+    - ln -sf /usr/bin/clang-18 /usr/bin/clang
+    - ln -sf /usr/bin/clang++-18 /usr/bin/clang++
+    - pip3 install --break-system-packages "conan>=2.0"
+    - conan profile detect --force
+
+cache:
+  key:
+    files: [conanfile.py]
+  paths: [.conan2/p]
+
+.conan_install: &conan_install
+  - conan install .
+      --profile:host "$CONAN_PROFILE"
+      --profile:build "$CONAN_PROFILE"
+      --build=missing
+      -s:h build_type=$BUILD_TYPE
+      -s:b build_type=$BUILD_TYPE
+
+build-test:
+  <<: *linux_setup
+  stage: build-test
+  parallel:
+    matrix:
+      - BUILD_TYPE: [Debug, Release]
+  script:
+    - *conan_install
+    - PRESET=$([ "$BUILD_TYPE" = "Debug" ] && echo conan-debug || echo conan-release)
+    - cmake --preset "$PRESET"
+    - cmake --build --preset "$PRESET" --parallel
+    - ctest --test-dir "build/$BUILD_TYPE" --output-on-failure
+
+sanitizers:
+  <<: *linux_setup
+  stage: sanitize
+  variables:
+    BUILD_TYPE: Debug
+  script:
+    - *conan_install
+    - cmake --preset conan-debug
+        -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer -g"
+        -DCMAKE_EXE_LINKER_FLAGS="-fsanitize=address,undefined"
+    - cmake --build --preset conan-debug --parallel
+    - ctest --test-dir build/Debug --output-on-failure
+
+package:
+  <<: *linux_setup
+  stage: package
+  variables:
+    BUILD_TYPE: Release
+  script:
+    - *conan_install
+    - cmake --preset conan-release
+    - cmake --build --preset conan-release --parallel
+    - cpack -G TGZ --config build/Release/CPackConfig.cmake -B "$CI_PROJECT_DIR/dist"
+  artifacts:
+    paths:
+      - dist/*.tar.gz
+      - build/Release/src/cli/pcp_cli

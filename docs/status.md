@@ -14,8 +14,8 @@ and report achieved throughput (points/frame) and hardware used.
 | Design | System Architect | ✅ Done |
 | Development | Cpp Developer | ✅ Done |
 | QA | QA Engineer | ✅ Done |
-| Release | Release Engineer | 🔄 In progress |
-| Documentation | Technical Writer | ⬜ Not started |
+| Release | Release Engineer | ✅ Done |
+| Documentation | Technical Writer | 🔄 In progress |
 
 ## Process rules for this project
 - Commit after each completed stage using the `semver-commit-description` skill.
@@ -31,3 +31,4 @@ and report achieved throughput (points/frame) and hardware used.
 - 2026-09-12: Design stage complete (3D k-d tree + brute-force baseline, GoogleTest, offscreen renderer default, vendor upstream under third_party/); PM resolved dataset-redistribution and viz-output residuals; handed off to Cpp Developer.
 - 2026-09-12: Development stage complete. 33/33 tests pass (Clang 18, Debug). 1M synthetic points (Release, i7-6700): k-NN ~434x speedup, radius ~12.8x, both correctness PASS vs brute force. Three accepted deviations (Aabb accessor rename fixes a design name-clash; pcp_viz always built per PM viz decision; additive synthetic generator/CLI flags for offline runs). Handed off to QA Engineer.
 - 2026-09-12: QA stage complete — PASSED. Clean Debug/Release/ASan+UBSan builds; 35/35 tests (added 2 independent index-correctness tests); zero sanitizer findings; all FR/NFR acceptance criteria met; 1M-point speedup reproduced (k-NN ~481x, radius ~28x). No defects. Two non-blocking cosmetic notes (points/frame label wording, unused --repeat flag). Handed off to Release Engineer.
+- 2026-09-12: Release stage complete. Added GitHub Actions CI (build-test Debug+Release, sanitizers, package/CPack TGZ) + GitLab mirror; VERSION seeded at 0.1.0; CPack packaging validated locally. Handed off to Technical Writer. Version tag deferred to close-out via semver-version-publish.

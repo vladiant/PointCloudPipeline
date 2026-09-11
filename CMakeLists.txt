@@ -39,3 +39,21 @@ if(PCP_BUILD_TESTS)
   find_package(GTest REQUIRED)
   add_subdirectory(tests)
 endif()
+
+# --- Packaging / release artifact (Release Engineer) -------------------------
+# Lightweight, portfolio-appropriate: install the demo CLI and package it as a
+# self-contained tarball via CPack (`cpack -G TGZ` from the build directory).
+install(TARGETS pcp_cli RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})
+install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/README.md"
+              "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE"
+              "${CMAKE_CURRENT_SOURCE_DIR}/NOTICES.md"
+        DESTINATION ${CMAKE_INSTALL_DOCDIR})
+
+set(CPACK_PACKAGE_NAME "PointCloudPipeline")
+set(CPACK_PACKAGE_VENDOR "vladiant")
+set(CPACK_PACKAGE_VERSION "${PROJECT_VERSION}")
+set(CPACK_PACKAGE_DESCRIPTION_SUMMARY
+    "3D k-d tree point-cloud k-NN / obstacle-avoidance query and benchmark demo")
+set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE")
+set(CPACK_GENERATOR "TGZ")
+include(CPack)
