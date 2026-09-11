@@ -67,3 +67,15 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Conan 2 generated files
+CMakeUserPresets.json
+conanbuild.sh
+conanrun.sh
+conan.lock
+
+# Rendered visualization output
+*.ppm
+
+# Downloaded / aggregated datasets (never commit KITTI data)
+data/kitti/

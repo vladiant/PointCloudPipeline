@@ -12,8 +12,8 @@ and report achieved throughput (points/frame) and hardware used.
 |-------|-------------|--------|
 | Requirements | Requirements Analyst | ✅ Done |
 | Design | System Architect | ✅ Done |
-| Development | Cpp Developer | 🔄 In progress |
-| QA | QA Engineer | ⬜ Not started |
+| Development | Cpp Developer | ✅ Done |
+| QA | QA Engineer | 🔄 In progress |
 | Release | Release Engineer | ⬜ Not started |
 | Documentation | Technical Writer | ⬜ Not started |
 
@@ -29,3 +29,4 @@ and report achieved throughput (points/frame) and hardware used.
 - 2026-09-12: Scoped as a new portfolio project; kicked off the Requirements stage.
 - 2026-09-12: Requirements stage complete (SRS written); handed off to System Architect.
 - 2026-09-12: Design stage complete (3D k-d tree + brute-force baseline, GoogleTest, offscreen renderer default, vendor upstream under third_party/); PM resolved dataset-redistribution and viz-output residuals; handed off to Cpp Developer.
+- 2026-09-12: Development stage complete. 33/33 tests pass (Clang 18, Debug). 1M synthetic points (Release, i7-6700): k-NN ~434x speedup, radius ~12.8x, both correctness PASS vs brute force. Three accepted deviations (Aabb accessor rename fixes a design name-clash; pcp_viz always built per PM viz decision; additive synthetic generator/CLI flags for offline runs). Handed off to QA Engineer.
