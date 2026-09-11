@@ -13,8 +13,8 @@ and report achieved throughput (points/frame) and hardware used.
 | Requirements | Requirements Analyst | ✅ Done |
 | Design | System Architect | ✅ Done |
 | Development | Cpp Developer | ✅ Done |
-| QA | QA Engineer | 🔄 In progress |
-| Release | Release Engineer | ⬜ Not started |
+| QA | QA Engineer | ✅ Done |
+| Release | Release Engineer | 🔄 In progress |
 | Documentation | Technical Writer | ⬜ Not started |
 
 ## Process rules for this project
@@ -30,3 +30,4 @@ and report achieved throughput (points/frame) and hardware used.
 - 2026-09-12: Requirements stage complete (SRS written); handed off to System Architect.
 - 2026-09-12: Design stage complete (3D k-d tree + brute-force baseline, GoogleTest, offscreen renderer default, vendor upstream under third_party/); PM resolved dataset-redistribution and viz-output residuals; handed off to Cpp Developer.
 - 2026-09-12: Development stage complete. 33/33 tests pass (Clang 18, Debug). 1M synthetic points (Release, i7-6700): k-NN ~434x speedup, radius ~12.8x, both correctness PASS vs brute force. Three accepted deviations (Aabb accessor rename fixes a design name-clash; pcp_viz always built per PM viz decision; additive synthetic generator/CLI flags for offline runs). Handed off to QA Engineer.
+- 2026-09-12: QA stage complete — PASSED. Clean Debug/Release/ASan+UBSan builds; 35/35 tests (added 2 independent index-correctness tests); zero sanitizer findings; all FR/NFR acceptance criteria met; 1M-point speedup reproduced (k-NN ~481x, radius ~28x). No defects. Two non-blocking cosmetic notes (points/frame label wording, unused --repeat flag). Handed off to Release Engineer.
