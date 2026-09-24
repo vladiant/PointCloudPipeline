@@ -114,12 +114,12 @@ the **hardware it ran on** (FR-10, NFR-4). Both are satisfied below.
 | Stage | k-d tree (indexed) | Brute force (baseline) | Speedup | Correctness |
 |---|---|---|---|---|
 | k-NN query (k=8) | ~34 µs | ~15 ms | **~480×** | PASS vs baseline |
-| Radius / obstacle query | — | — | **~28×** | PASS vs baseline |
+| Radius / obstacle query | ~220 µs | ~2.4 ms | **~11×** | PASS vs baseline |
 | k-d tree build | ~0.68–0.75 s | — | — | — |
 
 The k-NN indexed query is roughly **480× faster** than the linear scan while
 returning the **same neighbors** (within the documented distance tolerance,
-NFR-5), and the radius/obstacle query is roughly **28× faster**, also matching
+NFR-5), and the radius/obstacle query is roughly **11× faster**, also matching
 the baseline. A `960×720` offscreen PPM image of the frame and its query result
 is emitted (`frame.ppm`) with no display required.
 
