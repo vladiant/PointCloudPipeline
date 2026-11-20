@@ -118,6 +118,7 @@ ComparisonReport compareRadius(const SpatialIndex& indexed,
     return report;
 }
 
+/// Writes the benchmark comparison report to \p os.
 std::ostream& operator<<(std::ostream& os, const ComparisonReport& report) {
     const std::ios::fmtflags savedFlags = os.flags();
     const std::streamsize savedPrec = os.precision();

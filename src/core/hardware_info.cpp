@@ -8,6 +8,7 @@
 #include <thread>
 
 #ifndef PCP_BUILD_TYPE
+/// Build configuration name injected at compile time, e.g. "Debug" or "Release".
 #define PCP_BUILD_TYPE "unknown"
 #endif
 
@@ -74,6 +75,7 @@ HardwareInfo queryHardwareInfo() {
     return info;
 }
 
+/// Writes the hardware and build snapshot to \p os.
 std::ostream& operator<<(std::ostream& os, const HardwareInfo& info) {
     const std::ios::fmtflags savedFlags = os.flags();
     const std::streamsize savedPrec = os.precision();

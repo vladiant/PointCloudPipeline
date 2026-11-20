@@ -10,7 +10,7 @@ frames.
 It reuses and extends two MIT-licensed upstream repos
 ([KDTree](https://github.com/vlantonov/KDTree),
 [QuadTreeSample](https://github.com/vlantonov/QuadTreeSample)); see
-[`NOTICES.md`](NOTICES.md) for attribution.
+[`NOTICES.md`](https://github.com/vladiant/PointCloudPipeline/blob/main/NOTICES.md) for attribution.
 
 ## Architecture
 
@@ -65,7 +65,7 @@ Tiny redistributable sample:
 ./build/Release/pcp_cli --input data/sample.pcd --query 0,0,0 --k 4 --radius 2
 ```
 
-KITTI Velodyne frame (optional — see [`data/README.md`](data/README.md)):
+KITTI Velodyne frame (optional — see [`data/README.md`](https://github.com/vladiant/PointCloudPipeline/blob/main/data/README.md)):
 
 ```bash
 ./build/Release/pcp_cli --input data/kitti/aggregated_00_10.bin --format kitti \
@@ -163,4 +163,6 @@ Benchmarks are reproducible: the synthetic cloud is seeded (`--seed`, default
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE). Upstream attribution: [`NOTICES.md`](NOTICES.md).
+MIT — see [`LICENSE`](https://github.com/vladiant/PointCloudPipeline/blob/main/LICENSE).
+Upstream attribution:
+[`NOTICES.md`](https://github.com/vladiant/PointCloudPipeline/blob/main/NOTICES.md).

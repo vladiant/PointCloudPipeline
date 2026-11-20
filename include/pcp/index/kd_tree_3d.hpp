@@ -24,12 +24,15 @@ public:
     /// \note \p cloud must outlive this index.
     explicit KdTree3d(const PointCloud& cloud);
 
+    /// \copydoc SpatialIndex::kNearest
     [[nodiscard]] std::vector<Neighbor>
     kNearest(const Point3& query, std::size_t k) const override;
 
+    /// \copydoc SpatialIndex::withinRadius
     [[nodiscard]] std::vector<Neighbor>
     withinRadius(const Point3& query, Scalar radius) const override;
 
+    /// \copydoc SpatialIndex::name
     [[nodiscard]] std::string name() const override;
 
     /// Maximum depth of the built tree (0 for an empty cloud).

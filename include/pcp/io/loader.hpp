@@ -12,13 +12,18 @@
 namespace pcp::io {
 
 /// Supported input formats. \c Auto detects by file extension.
-enum class Format { Auto, KittiBin, Pcd, Ply };
+enum class Format {
+    Auto, ///< Detect format from the file extension.
+    KittiBin, ///< Binary KITTI Velodyne frame.
+    Pcd, ///< ASCII or binary PCD point cloud.
+    Ply ///< ASCII or binary PLY point cloud.
+};
 
 /// Result of a successful load.
 struct LoadResult {
-    PointCloud cloud;
+    PointCloud cloud; ///< Loaded point coordinates.
     std::size_t pointCount{}; ///< Reported to satisfy the FR-1 acceptance test.
-    Format detectedFormat{};
+    Format detectedFormat{}; ///< Format selected or detected during loading.
 };
 
 /// Load \p file into a PointCloud.

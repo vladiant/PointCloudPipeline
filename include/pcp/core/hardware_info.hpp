@@ -20,8 +20,13 @@ struct HardwareInfo {
 };
 
 /// Query the current machine's hardware/build info.
+/// \return A snapshot of CPU, memory, thread, compiler, and build-type details.
 [[nodiscard]] HardwareInfo queryHardwareInfo();
 
+/// Writes a human-readable hardware/build summary.
+/// \param os Destination stream.
+/// \param info Hardware snapshot to print.
+/// \return Reference to \p os.
 std::ostream& operator<<(std::ostream& os, const HardwareInfo& info);
 
 } // namespace pcp

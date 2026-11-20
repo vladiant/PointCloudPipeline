@@ -19,9 +19,9 @@ using Scalar = float;
 
 /// A single 3D point. Trivial, contiguous, and cache-friendly at 1M+ points.
 struct Point3 {
-    Scalar x{};
-    Scalar y{};
-    Scalar z{};
+    Scalar x{}; ///< X coordinate.
+    Scalar y{}; ///< Y coordinate.
+    Scalar z{}; ///< Z coordinate.
 
     /// Dimension accessor compatible with the upstream k-d tree style,
     /// extended from 2 to 3 dimensions. \p dim is taken modulo 3.
@@ -38,6 +38,9 @@ struct Point3 {
 };
 
 /// Squared Euclidean distance (avoids the sqrt on hot paths).
+/// \param a First point.
+/// \param b Second point.
+/// \return Squared Euclidean distance between \p a and \p b.
 [[nodiscard]] inline Scalar squaredDistance(const Point3& a,
                                             const Point3& b) noexcept {
     const Scalar dx = a.x - b.x;
@@ -47,6 +50,9 @@ struct Point3 {
 }
 
 /// Euclidean distance.
+/// \param a First point.
+/// \param b Second point.
+/// \return Euclidean distance between \p a and \p b.
 [[nodiscard]] inline Scalar distance(const Point3& a, const Point3& b) noexcept {
     return std::sqrt(squaredDistance(a, b));
 }
@@ -54,15 +60,30 @@ struct Point3 {
 /// Contiguous, cache-friendly storage for 1M+ points (NFR-1).
 class PointCloud {
 public:
+    /// Constructs an empty point cloud.
     PointCloud() = default;
+
+    /// Constructs a point cloud by moving the supplied points.
+    /// \param pts Points to store.
     explicit PointCloud(std::vector<Point3> pts);
 
+    /// \return Number of points in the cloud.
     [[nodiscard]] std::size_t size() const noexcept;
+
+    /// \return True when the cloud contains no points.
     [[nodiscard]] bool empty() const noexcept;
+
+    /// \param i Zero-based point index.
+    /// \return Point at \p i.
     [[nodiscard]] const Point3& operator[](std::size_t i) const;
+
+    /// \return Read-only view of the contiguous point storage.
     [[nodiscard]] const std::vector<Point3>& points() const noexcept;
 
+    /// Preallocates storage for at least \p n points.
     void reserve(std::size_t n);
+
+    /// Appends \p p to the cloud.
     void push_back(const Point3& p);
 
 private:
@@ -71,9 +92,11 @@ private:
 
 /// Axis-aligned bounding box; the 3D generalization of the upstream Rectangle.
 struct Aabb {
-    Point3 min{};
-    Point3 max{};
+    Point3 min{}; ///< Minimum coordinate on each axis.
+    Point3 max{}; ///< Maximum coordinate on each axis.
 
+    /// \param p Point to test.
+    /// \return True when \p p is inside or on the box boundary.
     [[nodiscard]] bool contains(const Point3& p) const noexcept;
 
     /// Lower bound along \p dim (renamed from the design's overloaded \c min to

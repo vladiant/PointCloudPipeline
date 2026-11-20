@@ -43,6 +43,10 @@ pcp::Point3 centroidFallback(const pcp::PointCloud& cloud) {
 
 } // namespace
 
+/// Command-line entry point for the PointCloudPipeline demo.
+/// \param argc Argument count.
+/// \param argv Argument vector.
+/// \return Exit status: zero on success and nonzero on error.
 int main(int argc, char** argv) {
     try {
         const pcp::cli::Args args = pcp::cli::parseArgs(argc, argv);

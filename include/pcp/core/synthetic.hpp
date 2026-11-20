@@ -15,7 +15,10 @@
 namespace pcp {
 
 /// Generate \p count points uniformly in the cube [-extent, extent]^3.
+/// \param count Number of points to generate.
 /// \param seed fixed RNG seed for reproducible benchmarks.
+/// \param extent Maximum absolute coordinate on each axis.
+/// \return A deterministically generated point cloud.
 [[nodiscard]] PointCloud makeSyntheticCloud(std::size_t count,
                                             unsigned seed = 42u,
                                             Scalar extent = 50.0f);

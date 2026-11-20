@@ -21,8 +21,8 @@ namespace pcp::viz {
 struct RenderOptions {
     bool interactive{false};                          ///< window vs. offscreen
     std::optional<std::filesystem::path> outputImage; ///< e.g. frame.ppm
-    int width{960};
-    int height{720};
+    int width{960}; ///< Output image width in pixels.
+    int height{720}; ///< Output image height in pixels.
 };
 
 /// Render \p cloud, highlighting the \p highlight points (e.g. a query result).

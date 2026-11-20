@@ -18,6 +18,10 @@ struct NearestResult {
 };
 
 /// FR-4: the \p k nearest neighbors of \p q using \p idx.
+/// \param idx Spatial index used for the query.
+/// \param q Query point.
+/// \param k Maximum number of neighbors.
+/// \return Nearest-neighbor result.
 [[nodiscard]] NearestResult
 nearestNeighbors(const SpatialIndex& idx, const Point3& q, std::size_t k);
 
@@ -28,6 +32,10 @@ struct ObstacleResult {
 };
 
 /// FR-5: is anything within \p radius of \p probe? Returns the offending points.
+/// \param idx Spatial index used for the query.
+/// \param probe Query point.
+/// \param radius Obstacle detection radius.
+/// \return Points within the radius and an aggregate presence flag.
 [[nodiscard]] ObstacleResult
 obstaclesWithin(const SpatialIndex& idx, const Point3& probe, Scalar radius);
 

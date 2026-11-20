@@ -17,8 +17,8 @@ namespace pcp {
 /// A neighbor result: an index into the source PointCloud and its squared
 /// distance to the query point.
 struct Neighbor {
-    std::size_t index{};
-    Scalar squaredDist{};
+    std::size_t index{}; ///< Zero-based index in the source PointCloud.
+    Scalar squaredDist{}; ///< Squared Euclidean distance to the query.
 };
 
 /// Abstract spatial index over a PointCloud.
