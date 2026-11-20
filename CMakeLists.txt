@@ -15,6 +15,7 @@ endif()
 option(PCP_ENABLE_VIZ    "Enable the optional Open3D interactive viz path" OFF)
 option(PCP_ENABLE_SPDLOG "Use spdlog for logging"                          ON)
 option(PCP_BUILD_TESTS   "Build unit tests"                                ON)
+option(PCP_BUILD_DOCS    "Build Doxygen API documentation (needs doxygen+dot)" OFF)
 
 if(PCP_ENABLE_SPDLOG)
   find_package(spdlog REQUIRED)
@@ -38,6 +39,12 @@ add_subdirectory(src/cli)
 if(PCP_BUILD_TESTS)
   find_package(GTest REQUIRED)
   add_subdirectory(tests)
+endif()
+
+# --- Documentation (Technical Writer / portfolio docs) -----------------------
+# Opt-in so ordinary builds never require doxygen/graphviz. See docs/CMakeLists.txt.
+if(PCP_BUILD_DOCS)
+  add_subdirectory(docs)
 endif()
 
 # --- Packaging / release artifact (Release Engineer) -------------------------

@@ -1,6 +1,6 @@
 # GitLab CI mirror of .github/workflows/ci.yml (GitHub Actions is the primary).
 # Same Conan 2 + CMake-preset flow, Clang 18, Open3D OFF. Kept minimal.
-stages: [build-test, sanitize, package]
+stages: [build-test, sanitize, package, docs]
 
 variables:
   CONAN_PROFILE: conan/profiles/linux-clang18
@@ -71,3 +71,22 @@ package:
     paths:
       - dist/*.tar.gz
       - build/Release/src/cli/pcp_cli
+
+# GitLab Pages mirror of .github/workflows/docs.yml. Builds the Doxygen HTML via
+# the CMake `docs` target (heavy deps off, no Conan needed) and publishes it.
+pages:
+  stage: docs
+  image: ubuntu:24.04
+  before_script:
+    - apt-get update
+    - apt-get install -y cmake doxygen graphviz plantuml
+  script:
+    - cmake -S . -B build -DPCP_BUILD_DOCS=ON -DPCP_ENABLE_SPDLOG=OFF -DPCP_BUILD_TESTS=OFF
+    - cmake --build build --target docs
+    - rm -rf public
+    - mv build/docs/doxygen/html public
+  artifacts:
+    paths:
+      - public
+  rules:
+    - if: $CI_COMMIT_REF_NAME == $CI_DEFAULT_BRANCH
