@@ -139,8 +139,9 @@ different hardware can re-run and obtain comparable *relative* speedups.
 ## Documentation
 
 API reference docs are generated with Doxygen, driven from CMake (see
-[`docs/CMakeLists.txt`](docs/CMakeLists.txt)). The `docs` target only parses
-sources, so it can be configured without the runtime dependencies:
+[`docs/CMakeLists.txt`](https://github.com/vladiant/PointCloudPipeline/blob/main/docs/CMakeLists.txt)).
+The `docs` target only parses sources, so it can be configured without the
+runtime dependencies:
 
 ```bash
 cmake -S . -B build -DPCP_BUILD_DOCS=ON -DPCP_ENABLE_SPDLOG=OFF -DPCP_BUILD_TESTS=OFF
@@ -148,9 +149,11 @@ cmake --build build --target docs
 # open build/docs/doxygen/html/index.html
 ```
 
-CI publishes the HTML to GitHub Pages ([`.github/workflows/docs.yml`](.github/workflows/docs.yml))
-and GitLab Pages (the `pages` job in [`.gitlab-ci.yml`](.gitlab-ci.yml)) from the
-default branch.
+CI publishes the HTML to GitHub Pages
+([`.github/workflows/docs.yml`](https://github.com/vladiant/PointCloudPipeline/blob/main/.github/workflows/docs.yml))
+and GitLab Pages (the `pages` job in
+[`.gitlab-ci.yml`](https://github.com/vladiant/PointCloudPipeline/blob/main/.gitlab-ci.yml))
+from the default branch.
 
 ## Reproducibility (NFR-3)
 
